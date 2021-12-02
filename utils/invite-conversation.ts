@@ -4,19 +4,23 @@ export async function inviteToSlackConversation(
   channel: string,
   users: string[]
 ) {
-  const { data } = await axios.post(
-    'https://slack.com/api/conversations.invite',
-    {
-      channel,
-      users,
-    },
-    {
-      headers: {
-        Authorization: `Bearer ${process.env.SLACK_TOKEN}`,
-        'Content-Type': 'application/json',
+  try {
+    const { data } = await axios.post(
+      'https://slack.com/api/conversations.invite',
+      {
+        channel,
+        users,
       },
-    }
-  );
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.SLACK_TOKEN}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
 
-  return data;
+    return data;
+  } catch (e) {
+    console.error('Error: ', e);
+  }
 }
