@@ -39,6 +39,29 @@ export const smeRouterFactory = () =>
       } catch (e) {
         console.debug('Error: ', e);
       }
+    })
+
+    .post('/unregister', async (req, res) => {
+      const body = req.body
+      const userId = body.user_id
+      const tags = messageToTagArray(body.text)
+
+      try {
+        const sme = await SME.findOne({ where: { userId } });
+
+         sme && tags.forEach(async (tag) => {
+          const foundTag = sme?.tags?.find(({name}) => tag.name === name);
+          if (foundTag) {
+            sme.$remove('tags', foundTag);
+          }
+        })
+
+        res.json(
+          `Ya no estás subscripto a ${tags.map(({ name }) => name)}`
+        )
+      } catch (e) {
+        console.debug('Error: ', e)
+      }
     });
 
 export const tagRouterFactory = () =>
