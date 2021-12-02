@@ -2,7 +2,7 @@ import axios from 'axios';
 
 export async function createMessage(channel: string, text: string) {
   const { data } = await axios.post(
-    'https://slack.com/api/chat.invite',
+    'https://slack.com/api/chat.postMessage',
     {
       channel,
       text,

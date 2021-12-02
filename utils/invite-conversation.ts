@@ -4,8 +4,6 @@ export async function inviteToSlackConversation(
   channel: string,
   users: string[]
 ) {
-  const commaSeparated = users.join(',');
-
   const { data } = await axios.post(
     'https://slack.com/api/conversations.invite',
     {
