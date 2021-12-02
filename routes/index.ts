@@ -76,8 +76,9 @@ export const tagRouterFactory = () =>
           },
         });
 
+        const smeIds = smes.map(({ userId }) => userId);
         res.json(
-          `Mensaje creado en grupo X para usuarios ${smes.map(({ userId }) => userId).join(',')}`
+          `Mensaje creado en grupo X para usuarios ${smeIds.join(',')}`
         )
       } catch (e) {
         console.debug('Error: ', e)
