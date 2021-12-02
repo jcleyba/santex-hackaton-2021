@@ -4,6 +4,7 @@
   "description": "",
   "main": "app.ts",
   "scripts": {
+    "prebuild": "yarn",
     "build": "tsc",
     "dev": "ts-node-dev app.ts",
     "start": "node dist/app.js",
