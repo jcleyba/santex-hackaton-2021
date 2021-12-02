@@ -39,10 +39,12 @@ export const tagRouterFactory = () =>
         },
         include: {
           model: Tag,
-          as: "tags",
           required: true,
+          attributes: []
         },
       })
+        .then((tag) => res.json(tag))
+        .catch(next)
     )
 
     .post("/tag", (req, res, next) =>
