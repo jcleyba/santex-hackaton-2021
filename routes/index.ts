@@ -61,20 +61,27 @@ export const tagRouterFactory = () =>
         .catch(next)
     )
 
-    .get('/tags/:tags', (req, res, next) => {
-      const tags = req.params.tags.split(',')
-      SME.findAll({
-        where: {
-          '$tags.name$': { [Op.in]: tags },
-        },
-        include: {
-          model: Tag,
-          required: true,
-          attributes: [],
-        },
-      })
-        .then((tag) => res.json(tag))
-        .catch(next)
+    .post('/help', async (req, res) => {
+      const tags = req.body.text.trim().split(',')
+
+      try {
+        const smes = await SME.findAll({
+          where: {
+            '$tags.name$': { [Op.in]: tags },
+          },
+          include: {
+            model: Tag,
+            required: true,
+            attributes: [],
+          },
+        });
+
+        res.json(
+          `Mensaje creado en grupo X para usuarios ${smes.map(({ userId }) => userId).join(',')}`
+        )
+      } catch (e) {
+        console.debug('Error: ', e)
+      }
     })
 
     .post('/tag', (req, res, next) =>
