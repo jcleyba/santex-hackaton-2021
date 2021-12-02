@@ -6,21 +6,20 @@ import { Tag, SME } from "../models";
 export const smeRouterFactory = () =>
   Router()
     .get("/sme", (req, res, next) => {
-      console.log("Here");
       SME.findAll({ include: [Tag] })
         .then((sme) => res.json(sme))
         .catch(next);
     })
 
-    .get("/sme/:id", (req, res, next) =>
-      SME.findByPk(req.params.id)
+    .get("/sme/:userId", (req, res, next) =>
+      SME.findByPk(req.params.userId, { include: [{ model: Tag, as: "tags" }] })
         .then((sme) => (sme ? res.json(sme) : next({ statusCode: 404 })))
         .catch(next)
     )
 
     .post("/sme", (req, res, next) =>
       SME.create(req.body, {
-        include:[{model: Tag, as: 'tags'}],
+        include: [{ model: Tag, as: "tags" }],
       })
         .then((sme) => res.json(sme))
         .catch(next)

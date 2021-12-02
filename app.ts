@@ -9,7 +9,7 @@ import { sequelize } from "./db";
 
 (async () => {
 
-  await sequelize.sync({force: true});
+  await sequelize.sync();
   
   const app: Application = express();
 

@@ -1,9 +1,10 @@
-import { Table, Column, Model, HasMany, ForeignKey, BelongsToMany } from 'sequelize-typescript';
+import { Table, Column, Model, HasMany, ForeignKey, BelongsToMany, PrimaryKey } from 'sequelize-typescript';
 
 @Table
 class SME extends Model {
+  @PrimaryKey
   @Column
-  email!: string
+  userId!: string
 
   @BelongsToMany(() => Tag, () => SmeTag)
   tags!: Tag[]
@@ -21,7 +22,7 @@ class Tag extends Model {
 class SmeTag extends Model {
   @ForeignKey(() => SME)
   @Column
-  smeId!: number
+  smeId!: string
 
   @ForeignKey(() => Tag)
   @Column
