@@ -34,9 +34,12 @@ export const smeRouterFactory = () =>
           newTag.$add('smes', newSme);
         });
 
-        res.json(
-          `Gracias por suscribirse a ${tags.map(({ name }) => name).join(', ')}`
-        );
+        res.json({
+          response_type: 'in_channel',
+          text: `Gracias <@${sme.userId}|user> por suscribirse a ${tags
+            .map(({ name }) => name)
+            .join(', ')}`,
+        });
       } catch (e) {
         console.debug('Error: ', e);
         res.end(400);
@@ -59,9 +62,13 @@ export const smeRouterFactory = () =>
             }
           });
 
-        res.json(
-          `Ya no estás subscripto a ${tags.map(({ name }) => name).join(', ')}`
-        );
+        res.json({
+          response_type: 'in_channel',
+          text: `<@${userId}|user> ya no estás subscripto a ${tags
+            .map(({ name }) => name)
+            .join(', ')}`,
+        });
+        res.json();
       } catch (e) {
         console.debug('Error: ', e);
       }
@@ -115,14 +122,15 @@ export const tagRouterFactory = () =>
         const createConvo = await createSlackConversation(conversationName);
         const channelId = createConvo.channel.id;
 
-        await inviteToSlackConversation(channelId, smeIds);
-        await createMessage(channelId, text);
+        inviteToSlackConversation(channelId, smeIds);
+        createMessage(channelId, text);
 
-        res.json(
-          `Mensaje creado en grupo ${conversationName} para usuarios ${smeIds.join(
-            ','
-          )}`
-        );
+        res.json({
+          response_type: 'in_channel',
+          text: `Mensaje creado en grupo <#${channelId}|${conversationName}> para usuarios ${smeIds
+            .map((id) => `<@${id}|user>`)
+            .join(', ')}`,
+        });
       } catch (e) {
         console.debug('Error: ', e);
       }
