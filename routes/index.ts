@@ -41,7 +41,7 @@ export const smeRouterFactory = () =>
             .join(', ')}`,
         });
       } catch (e) {
-        console.debug('Error: ', e);
+        console.error('Error: ', e);
         res.end(400);
       }
     })
@@ -70,7 +70,7 @@ export const smeRouterFactory = () =>
         });
         res.json();
       } catch (e) {
-        console.debug('Error: ', e);
+        console.error('Error: ', e);
       }
     });
 
@@ -114,25 +114,34 @@ export const tagRouterFactory = () =>
             attributes: [],
           },
         });
-        const smeIds = smes.map(({ userId }) => userId).concat([userId]);
+        const smeIds = new Set(smes.map(({ userId }) => userId));
+        smeIds.add(userId);
         const conversationName = `${userName
           .replace(/[^\w\s]/gi, '')
           .toLocaleLowerCase()}-${Date.now()}`;
 
         const createConvo = await createSlackConversation(conversationName);
+
+        if (!createConvo?.channel) {
+          console.error('Conversation cannot be created');
+          res.end(400);
+          return;
+        }
         const channelId = createConvo.channel.id;
 
-        inviteToSlackConversation(channelId, smeIds);
+        inviteToSlackConversation(channelId, Array.from(smeIds));
         createMessage(channelId, text);
 
         res.json({
           response_type: 'in_channel',
-          text: `Mensaje creado en grupo <#${channelId}|${conversationName}> para usuarios ${smeIds
+          text: `Mensaje creado en grupo <#${channelId}|${conversationName}> para usuarios ${Array.from(
+            smeIds
+          )
             .map((id) => `<@${id}|user>`)
             .join(', ')}`,
         });
       } catch (e) {
-        console.debug('Error: ', e);
+        console.error('Error: ', e);
       }
     })
 
