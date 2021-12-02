@@ -1,18 +1,18 @@
-import { Router } from 'express';
-import { Op } from 'sequelize';
+import { Router } from 'express'
+import { Op } from 'sequelize'
 
-import { Tag, SME } from '../models';
-import { createSlackConversation } from '../utils/create-conversation';
-import { createMessage } from '../utils/create-message';
-import { inviteToSlackConversation } from '../utils/invite-conversation';
-import { messageToTagArray } from '../utils/parse-message';
+import { Tag, SME } from '../models'
+import { createSlackConversation } from '../utils/create-conversation'
+import { createMessage } from '../utils/create-message'
+import { inviteToSlackConversation } from '../utils/invite-conversation'
+import { messageToTagArray } from '../utils/parse-message'
 
 export const smeRouterFactory = () =>
   Router()
     .get('/sme', (req, res, next) => {
       SME.findAll({ include: [Tag] })
         .then((sme) => res.json(sme))
-        .catch(next);
+        .catch(next)
     })
 
     .get('/sme/:userId', (req, res, next) =>
@@ -22,22 +22,22 @@ export const smeRouterFactory = () =>
     )
 
     .post('/sme', async (req, res) => {
-      const body = req.body;
-      const sme = { userId: body.user_id, tags: messageToTagArray(body.text) };
+      const body = req.body
+      const sme = { userId: body.user_id, tags: messageToTagArray(body.text) }
 
       try {
-        const [newSme] = await SME.upsert(sme);
+        const [newSme] = await SME.upsert(sme)
 
         sme.tags.forEach(async (tag) => {
-          const [newTag] = await Tag.upsert(tag);
-          newTag.$add('smes', newSme);
-        });
+          const [newTag] = await Tag.upsert(tag)
+          newTag.$add('smes', newSme)
+        })
 
         res.json(
           `Gracias por suscribirse a ${sme.tags.map(({ name }) => name)}`
-        );
+        )
       } catch (e) {
-        console.debug('Error: ', e);
+        console.debug('Error: ', e)
       }
     })
 
@@ -47,22 +47,21 @@ export const smeRouterFactory = () =>
       const tags = messageToTagArray(body.text)
 
       try {
-        const sme = await SME.findOne({ where: { userId } });
+        const sme = await SME.findOne({ where: { userId }, include: [Tag] })
 
-         sme && tags.forEach(async (tag) => {
-          const foundTag = sme?.tags?.find(({name}) => tag.name === name);
-          if (foundTag) {
-            sme.$remove('tags', foundTag);
-          }
-        })
+        sme &&
+          tags.forEach(async (tag) => {
+            const foundTag = sme.tags.find(({ name }) => tag.name === name)
+            if (foundTag) {
+              sme.$remove('tags', foundTag)
+            }
+          })
 
-        res.json(
-          `Ya no estás subscripto a ${tags.map(({ name }) => name)}`
-        )
+        res.json(`Ya no estás subscripto a ${tags.map(({ name }) => name)}`)
       } catch (e) {
         console.debug('Error: ', e)
       }
-    });
+    })
 
 export const tagRouterFactory = () =>
   Router()
@@ -88,9 +87,9 @@ export const tagRouterFactory = () =>
     )
 
     .post('/help', async (req, res) => {
-      const userName = req.body.user_name;
-      const text = req.body.text;
-      const tags = messageToTagArray(text).map(({ name }) => name);
+      const userName = req.body.user_name
+      const text = req.body.text
+      const tags = messageToTagArray(text).map(({ name }) => name)
 
       try {
         const smes = await SME.findAll({
@@ -102,25 +101,25 @@ export const tagRouterFactory = () =>
             required: true,
             attributes: [],
           },
-        });
-        const smeIds = smes.map(({ userId }) => userId);
+        })
+        const smeIds = smes.map(({ userId }) => userId)
         const conversationName = `${userName
           .replace(/[^\w\s]/gi, '')
-          .toLocaleLowerCase()}-${Date.now()}`;
+          .toLocaleLowerCase()}-${Date.now()}`
 
-        const createConvo = await createSlackConversation(conversationName);
-        const channelId = createConvo.channel.id;
+        const createConvo = await createSlackConversation(conversationName)
+        const channelId = createConvo.channel.id
 
-        await inviteToSlackConversation(channelId, smeIds);
-        await createMessage(channelId, text);
+        await inviteToSlackConversation(channelId, smeIds)
+        await createMessage(channelId, text)
 
         res.json(
           `Mensaje creado en grupo ${conversationName} para usuarios ${smeIds.join(
             ','
           )}`
-        );
+        )
       } catch (e) {
-        console.debug('Error: ', e);
+        console.debug('Error: ', e)
       }
     })
 
@@ -128,4 +127,4 @@ export const tagRouterFactory = () =>
       Tag.create(req.body)
         .then((tag) => res.json(tag))
         .catch(next)
-    );
+    )
